@@ -8,4 +8,8 @@
     .fontOnboarding{
         @apply text-lg font-light ;
     }
+
+    .buttonCE{
+        @apply text-sm bg-blue-600 text-white p-2 rounded-md
+    }
 }
