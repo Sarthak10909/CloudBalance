@@ -36,6 +36,38 @@
 
 
 
+#spring:
+#  application:
+#    name: backend.cloudBalance
+#
+#  datasource:
+#    mysqlUrl: jdbc:mysql://localhost:3306/cloud_balance?useSSL=false&serverTimezone=UTC
+#    username: sarthak
+#    sqlPassword: HelloWorld@234
+#    mysqlDriver: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: none
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQLDialect
+##        format_sql: true
+#
+#snowflake:
+#  datasource:
+#    url: jdbc:snowflake://mqtmxtd-qs03973.snowflakecomputing.com
+#    user: SARTHAK0903
+#    password: HelloMe@092003
+#    role: ACCOUNTADMIN
+#    db: SNOWFLAKE_LEARNING_DB
+#    schema: PUBLIC
+#    driver-class-name: net.snowflake.client.jdbc.SnowflakeDriver
+#
+#server:
+#  port: 8080
+
 spring:
   application:
     name: backend.cloudBalance
@@ -48,20 +80,23 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
+    open-in-view: false
 
+# ======================
+# SNOWFLAKE CONFIG
+# ======================
 snowflake:
-  url: https://mqtmxtd-qs03973.snowflakecomputing.com
-  user: SARTHAK0903
+  jdbc-url: jdbc:snowflake://mqtmxtd-qs03973.snowflakecomputing.com
+  username: SARTHAK0903
   password: HelloMe@092003
-  role: ACCOUNTADMIN
-  db: SNOWFLAKE_LEARNING_DB
+  driver-class-name: net.snowflake.client.jdbc.SnowflakeDriver
+  warehouse: COMPUTE_WH
+  database: SNOWFLAKE_LEARNING_DB
   schema: PUBLIC
+  role: ACCOUNTADMIN
 
 server:
   port: 8080
+

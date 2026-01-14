@@ -25,7 +25,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginDTO request, HttpServletResponse response){
         String accessToken = authServiceImpl.loginMethod(request, response);
-//        return new ResponseEntity<>("User successfully logged in: " + accessToken, HttpStatus.CREATED);
         System.out.println("this is it");
         return ResponseEntity.ok(new LoginResponseDTO(accessToken));
     }

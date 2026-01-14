@@ -55,8 +55,8 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/userAccount")
     public ResponseEntity<?> getAccountsForUser(@PathVariable Long id){
-        EditResponseDTO editResponeDTO = userService.getUserWithAccount(id);
-        return new ResponseEntity<>(editResponeDTO, HttpStatus.OK);
+        EditResponseDTO editResponseDTO = userService.getUserWithAccount(id);
+        return new ResponseEntity<>(editResponseDTO, HttpStatus.OK);
     }
 
 //    @GetMapping("/getUser/{id}")

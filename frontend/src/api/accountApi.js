@@ -5,6 +5,6 @@ export const getAllAccounts = () => {
     return axiosInstance.get(`/accounts/fetchAccount`);
 }
 
-export const createAccount = () => {
-    return axiosInstance.post('/accounts/createAccount');
-}
+export const createAccount = (accountData) => {
+  return axiosInstance.post("/accounts/createAccount", accountData);
+};

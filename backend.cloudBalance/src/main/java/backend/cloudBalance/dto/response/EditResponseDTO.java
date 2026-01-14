@@ -14,7 +14,7 @@ public class EditResponseDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private RoleType role;
+    private String role;
 
     List<Long> accountIds;
 

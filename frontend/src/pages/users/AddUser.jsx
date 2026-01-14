@@ -4,43 +4,59 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from "react-toastify";
 import { userFields } from './formConfig/userFields';
 import FormRenderer from '../../components/form/FormRenderer';
+import { createUser } from '../../api/userApi';
 
 function AddUser() {
 
-    const navigate = useNavigate();
-    
-    const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-    }
+  const [formData, setFormData] = useState({});
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
 
-        const token = localStorage.getItem("accessToken");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        const res = await axios.post(
-            "http://localhost:8080/dashboard/users/addUser",
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                withCredentials: true
-            }
-        );
+    const token = localStorage.getItem("accessToken");
 
-        toast.success("User added successfully!", {
-            position: "top-right",
-            autoClose: 1500,
-        });
+    // const res = await axios.post(
+    //     "http://localhost:8080/dashboard/users/addUser",
+    //     formData,
+    //     {
+    //         headers: {
+    //             Authorization: `Bearer ${token}`
+    //         },
+    //         withCredentials: true
+    //     }
+    // );
 
-        navigate("/dashboard/users");
-        return;
-    }
+    const roleMap = {
+      ADMIN: "ROLE_ADMIN",
+      CUSTOMER: "ROLE_CUSTOMER",
+      READ_ONLY: "ROLE_READ_ONLY",
+    };
 
-    return (
+    const payload = {
+      ...formData,
+      role: roleMap[formData.role],
+    };
+
+    await createUser(payload);
+
+    // const res = await createUser(formData);
+
+    toast.success("User added successfully!", {
+      position: "top-right",
+      autoClose: 1500,
+    });
+
+    navigate("/dashboard/users");
+    return;
+  }
+
+  return (
     <div className="bg-white p-8 mt-10 ml-4 rounded shadow-md w-fit">
       <form onSubmit={handleSubmit}>
         <FormRenderer

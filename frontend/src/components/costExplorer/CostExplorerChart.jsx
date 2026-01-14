@@ -1,278 +1,247 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import FusionCharts from "fusioncharts";
 import Charts from "fusioncharts/fusioncharts.charts";
 import ReactFC from "react-fusioncharts";
 import StackedCostChart from "./StackedCostChart";
 import CostTrendLineChart from "./CostTrendLineChart";
-import { useState } from "react";
-import { costExplorerData } from "./CostExplorerDummyData";
 import {
-    BarChart,
-    BarChart2,
-    LineChart,
-    PieChart,
-    Activity,
-    TrendingUp,
-    TrendingDown
+  BarChart2,
+  LineChart,
 } from "lucide-react";
-import FilterPanel from "./filterPanel";
-
+import FilterPanel from "./FilterPanel";
+import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 
 Charts(FusionCharts);
 
-
-
+/* ---------- GROUP BY OPTIONS ---------- */
 const groupByOptions = [
-    "Service",
-    "Instance Type",
-    "Account ID",
-    "Usage Type",
-    "Platform",
-    "Region",
-    "Usage Type Group",
+  "Service",
+  "Instance Type",
+  "Account ID",
+  "Usage Type",
+  "Platform",
+  "Region",
+  "Usage Type Group",
+  "Instance"
 ];
 
+const groupByMap = {
+  "Service": "SERVICE",
+  "Instance Type": "INSTANCE_TYPE",
+  "Account ID": "ACCOUNT_ID",
+  "Usage Type": "USAGE_TYPE",
+  "Platform": "PLATFORM",
+  "Region": "REGION",
+  "Usage Type Group": "USAGE_TYPE_GROUP",
+  "Instance": "INSTANCE_TYPE"
+};
+
 const months = [
-    "Jan 2025",
-    "Feb 2025",
-    "Mar 2025",
-    "Apr 2025",
-    "May 2025",
-    "Jun 2025"
+  "Jan 2025",
+  "Feb 2025",
+  "Mar 2025",
+  "Apr 2025",
+  "May 2025",
+  "Jun 2025",
 ];
 
 function CostExplorerChart() {
-    const [activeChart, setActiveChart] = useState("STACKED");
-    const [groupBy, setGroupBy] = useState("Service");
-    const [startMonth, setStartMonth] = useState("Jan 2025");
-    const [endMonth, setEndMonth] = useState("Jun 2025");
+  const [activeChart, setActiveChart] = useState("STACKED");
+  const [groupBy, setGroupBy] = useState("Service");
+  const [startMonth, setStartMonth] = useState("Jan 2025");
+  const [endMonth, setEndMonth] = useState("Jun 2025");
 
-    /* -------- Stacked Chart Config -------- */
-    const stackedChartConfig = {
-        chart: {
-            caption: "AWS Cost Explorer",
-            subcaption: `Grouped by ${groupBy}`,
-            xaxisname: "Month",
-            yaxisname: "Cost (USD)",
-            numberprefix: "$",
-            theme: "gammel",
-            showsum: "1",
-            legendposition: "bottom",
-            showvalues: "0"
-        },
-        categories: [{ category: costExplorerData.categories }],
-        dataset: costExplorerData.dataset
-    };
+  /* ---------- FILTER STATE ---------- */
+  const [showFilters, setShowFilters] = useState(false);
+  const [availableFilters, setAvailableFilters] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
-    /* -------- Line Chart Config -------- */
-    const lineChartConfig = {
-        chart: {
-            caption: "AWS Cost Trend",
-            subcaption: "Monthly Total Cost",
-            xaxisname: "Month",
-            yaxisname: "Cost (USD)",
-            numberprefix: "$",
-            theme: "gammel",
-            showvalues: "0",
-            drawanchors: "1"
+  /* ---------- FETCH FILTER VALUES ---------- */
+useEffect(() => {
+  if (!showFilters) return;
+
+  const fetchFilters = async () => {
+    try {
+      const res = await axiosInstance.get("/api/cost-explorer/filters", {
+        params: {
+          groupBy: groupByMap[groupBy],
         },
-        categories: [{ category: costExplorerData.categories }],
-        dataset: [
-            {
-                seriesname: "Total Cost",
-                data: [
-                    { value: 570 },
-                    { value: 695 },
-                    { value: 665 },
-                    { value: 770 },
-                    { value: 810 },
-                    { value: 850 }
-                ]
-            }
-        ]
+      });
+
+      console.log("FILTER API RESPONSE:", res.data);
+
+      setAvailableFilters(Array.isArray(res.data) ? res.data : []);
+      setSelectedFilters([]);
+    } catch (err) {
+      console.error("Failed to fetch filters", err);
+      setAvailableFilters([]);
     }
-    return (
-        // <div className="bg-white border-b rounded-xl shadow-sm m-5 ">
+  };
 
-        //     <div className="bg-gray-200 flex items-center gap-4 px-6 py-4 mb-4">
-        //         <span className="text-sm font-medium whitespace-nowrap">
-        //             Group By:
-        //         </span>
-
-        //         <div className="flex flex-wrap gap-4">
-        //             {groupByOptions.map(option => (
-        //                 <button
-        //                     key={option}
-        //                     onClick={() => setGroupBy(option)}
-        //                     className={`buttonCE ${groupBy === option
-        //                         ? "bg-blue-600 text-white"
-        //                         : "bg-white text-blue-500"
-        //                         }`}
-        //                 >
-        //                     {option}
-        //                 </button>
-        //             ))}
-        //         </div>
-
-        //     </div>
-
-        //     {/* Header + Controls */}
-        //     <div className="flex flex-wrap ml-270 items-center gap-4 mb-6">
-
-        //         <select
-        //             value={startMonth}
-        //             onChange={e => setStartMonth(e.target.value)}
-        //             className="border px-3 py-2 rounded text-sm"
-        //         >
-        //             {months.map(m => <option key={m}>{m}</option>)}
-        //         </select>
-
-        //         <select
-        //             value={endMonth}
-        //             onChange={e => setEndMonth(e.target.value)}
-        //             className="border px-3 py-2 rounded text-sm"
-        //         >
-        //             {months.map(m => <option key={m}>{m}</option>)}
-        //         </select>
-
-        //         <div className="gap-0">
-        //             <button
-        //                 onClick={() => setActiveChart("STACKED")}
-        //                 className={`px-4 py-2 rounded text-sm border ${activeChart === "STACKED"
-        //                     ? "bg-blue-600 text-white"
-        //                     : "bg-white"
-        //                     }`}
-        //             >
-        //                 <BarChart2 size={16} />
-        //             </button>
-
-        //             <button
-        //                 onClick={() => setActiveChart("LINE")}
-        //                 className={`px-4 py-2 rounded text-sm border ${activeChart === "LINE"
-        //                     ? "bg-blue-600 text-white"
-        //                     : "bg-white"
-        //                     }`}
-        //             >
-        //                 <LineChart size={16} />
-        //             </button>
-        //         </div>
-
-
-        //     </div>
-
-        //     <div className="flex">
-        //         {/* Chart Render */}
-        //         {
-        //             activeChart === "STACKED" ? (
-        //                 <StackedCostChart dataSource={stackedChartConfig} />
-        //             ) : (
-        //                 <CostTrendLineChart dataSource={lineChartConfig} />
-        //             )
-        //         }
-
-        //         {/* Filter */}
-        //         <div>
-        //             <FilterPanel />
-
-        //         </div>
-        //     </div>
+  fetchFilters();
+}, [showFilters, groupBy]);
 
 
 
-        // </div >
-        <div className="bg-white border rounded-xl shadow-sm p-6">
+  /* ---------- APPLY FILTERS ---------- */
+  const applyFilters = async () => {
+    const res = await axios.get("/api/cost-explorer/graph", {
+      params: {
+        groupBy: groupByMap[groupBy],
+        startMonth,
+        endMonth,
+        values: selectedFilters, // axios handles encoding
+      },
+    });
 
-            {/* GROUP BY – full width */}
-            <div className="-mx-6 mb-6 bg-gray-200 border-b">
-                <div className="px-6 py-4 flex items-center gap-5">
-                    <span className="text-sm font-medium whitespace-nowrap">
-                        Group By:
-                    </span>
+    // TODO: map res.data -> FusionCharts dataset
+    console.log("Filtered graph data:", res.data);
+  };
 
-                    <div className="flex flex-wrap gap-2">
-                        {groupByOptions.map(option => (
-                            <button
-                                key={option}
-                                onClick={() => setGroupBy(option)}
-                                className={`buttonCE ${groupBy === option
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-white text-blue-500"
-                                    }`}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+  /* ---------- CHART CONFIGS (STATIC FOR NOW) ---------- */
+  const stackedChartConfig = {
+    chart: {
+      caption: "AWS Cost Explorer",
+      subcaption: `Grouped by ${groupBy}`,
+      xaxisname: "Month",
+      yaxisname: "Cost (USD)",
+      numberprefix: "$",
+      theme: "fusion",
+      showBorder: "0",
+      showShadow: "0",
+      plotSpacePercent: "25",
+      plotPadding: "5",
+      showValues: "0",
+    },
+    categories: [{ category: [] }],
+    dataset: [],
+  };
+
+  const lineChartConfig = {
+    chart: {
+      caption: "AWS Cost Trend",
+      subcaption: "Monthly Total Cost",
+      xaxisname: "Month",
+      yaxisname: "Cost (USD)",
+      numberprefix: "$",
+      theme: "fusion",
+      showBorder: "0",
+      showShadow: "0",
+      drawAnchors: "0",
+      showValues: "0",
+    },
+    categories: [{ category: [] }],
+    dataset: [],
+  };
+
+  return (
+    <div className="bg-white border rounded-xl shadow-sm p-6">
+
+      {/* GROUP BY BAR */}
+      <div className="-mx-6 mb-6 bg-gray-200 border-b">
+        <div className="px-6 py-4 flex items-center gap-4">
+          <span className="text-sm font-medium">Group By:</span>
+          <div className="flex flex-wrap gap-2">
+            {groupByOptions.map(option => (
+              <button
+                key={option}
+                onClick={() => {
+                  setGroupBy(option);
+                  setShowFilters(false);
+                }}
+                className={`buttonCE ${
+                  groupBy === option
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-blue-500"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="flex gap-6">
+
+        {/* LEFT SIDE */}
+        <div className="flex-1">
+
+          {/* CONTROLS */}
+          <div className="flex items-center gap-3 mb-6">
+            <select
+              value={startMonth}
+              onChange={e => setStartMonth(e.target.value)}
+              className="border px-3 py-2 rounded text-sm"
+            >
+              {months.map(m => <option key={m}>{m}</option>)}
+            </select>
+
+            <select
+              value={endMonth}
+              onChange={e => setEndMonth(e.target.value)}
+              className="border px-3 py-2 rounded text-sm"
+            >
+              {months.map(m => <option key={m}>{m}</option>)}
+            </select>
+
+            {/* CHART TOGGLE */}
+            <div className="flex border rounded-md overflow-hidden">
+              <button
+                onClick={() => setActiveChart("STACKED")}
+                className={`px-3 py-2 ${
+                  activeChart === "STACKED" ? "bg-blue-600 text-white" : ""
+                }`}
+              >
+                <BarChart2 size={16} />
+              </button>
+              <button
+                onClick={() => setActiveChart("LINE")}
+                className={`px-3 py-2 ${
+                  activeChart === "LINE" ? "bg-blue-600 text-white" : ""
+                }`}
+              >
+                <LineChart size={16} />
+              </button>
             </div>
 
-            {/* MAIN CONTENT AREA */}
-            <div className="flex gap-6">
+            {/* FILTER TOGGLE */}
+            <button
+              onClick={() => setShowFilters(prev => !prev)}
+              className="px-3 py-2 text-sm border rounded-md"
+            >
+              {showFilters ? "Hide Filters" : "Show Filters"}
+            </button>
+          </div>
 
-                {/* LEFT SIDE: Controls + Chart */}
-                <div className="flex-1">
-
-                    {/* Header + Controls */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <select
-                            value={startMonth}
-                            onChange={e => setStartMonth(e.target.value)}
-                            className="border px-3 py-2 rounded text-sm"
-                        >
-                            {months.map(m => <option key={m}>{m}</option>)}
-                        </select>
-
-                        <select
-                            value={endMonth}
-                            onChange={e => setEndMonth(e.target.value)}
-                            className="border px-3 py-2 rounded text-sm"
-                        >
-                            {months.map(m => <option key={m}>{m}</option>)}
-                        </select>
-
-                        {/* Chart Toggle */}
-                        <div className="flex border rounded-md overflow-hidden">
-                            <button
-                                onClick={() => setActiveChart("STACKED")}
-                                className={`px-3 py-2 text-sm ${activeChart === "STACKED"
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-white"
-                                    }`}
-                            >
-                                <BarChart2 size={16} />
-                            </button>
-
-                            <button
-                                onClick={() => setActiveChart("LINE")}
-                                className={`px-3 py-2 text-sm ${activeChart === "LINE"
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-white"
-                                    }`}
-                            >
-                                <LineChart size={16} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Chart */}
-                    <div className="bg-white">
-                        {activeChart === "STACKED" ? (
-                            <StackedCostChart dataSource={stackedChartConfig} />
-                        ) : (
-                            <CostTrendLineChart dataSource={lineChartConfig} />
-                        )}
-                    </div>
-                </div>
-
-                {/* RIGHT SIDE: Filters */}
-                <div className="w-64 shrink-0">
-                    <FilterPanel />
-                </div>
-
-            </div>
+          {/* CHART */}
+          {activeChart === "STACKED" ? (
+            <StackedCostChart dataSource={stackedChartConfig} />
+          ) : (
+            <CostTrendLineChart dataSource={lineChartConfig} />
+          )}
         </div>
 
-    );
+        {/* RIGHT SIDE FILTER PANEL */}
+        {showFilters && (
+          <FilterPanel
+            values={availableFilters}
+            selectedValues={selectedFilters}
+            onChange={(value) =>
+              setSelectedFilters(prev =>
+                prev.includes(value)
+                  ? prev.filter(v => v !== value)
+                  : [...prev, value]
+              )
+            }
+            onApply={applyFilters}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default CostExplorerChart;

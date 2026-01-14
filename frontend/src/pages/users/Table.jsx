@@ -6,67 +6,41 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Pencil } from "lucide-react";
-import Link from "@mui/material/Link";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 import { useEffect, useState } from "react";
-
+import { useAuth } from "../../context/AuthContext";
 
 export default function UsersTable() {
-
-  // useEffect(() => {
-  //   axios.get("http://localhost:8080/dashboard/users")
-  //     .then(response => {
-  //       console.log(response.data);
-  //     })
-  //     .catch(error => {
-  //       console.log(error);
-  //     })
-  // }, []);
-
   const [users, setUsers] = useState([]);
+  const { auth } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
 
-    const getUsers = async () => {
-      try {
-        const res = await axios.get("http://localhost:8080/dashboard/users", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          withCredentials: true
-        });
-
-        setUsers(res.data);
-      } catch (err) {
-        console.log(err.getMessage);
-      }
-    };
-    getUsers();
-  }, [])
-
-  const navigate = useNavigate();
+    axios
+      .get("http://localhost:8080/dashboard/users", {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      })
+      .then((res) => setUsers(res.data))
+      .catch(console.error);
+  }, []);
 
   const handleEdit = (user) => {
     navigate("/dashboard/users/editUsers", {
-      state: { userId: user.id }
+      state: { userId: user.id },
     });
-    console.log(user);
-  }
+  };
 
-  
+  const canEdit = auth.role === "ROLE_ADMIN";
+
   return (
-
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 900 }}>
-
         <TableHead>
-          <TableRow
-            sx={{
-              backgroundColor: "#dbeafe",
-            }}
-          >
+          <TableRow sx={{ backgroundColor: "#dbeafe" }}>
             <TableCell>ID</TableCell>
             <TableCell>First Name</TableCell>
             <TableCell>Last Name</TableCell>
@@ -90,21 +64,17 @@ export default function UsersTable() {
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.role}</TableCell>
               <TableCell>
-                {/* <Link to = "/dashbooard/users/editUser"> */}
-                <Pencil onClick={() => {
-                  handleEdit(user)
-                }}
-
-                  size={20}
-                  className="cursor-pointer hover:text-blue-600"
-                />
-                {/* </Link> */}
+                {canEdit && (
+                  <Pencil
+                    size={20}
+                    onClick={() => handleEdit(user)}
+                    className="cursor-pointer hover:text-blue-600"
+                  />
+                )}
               </TableCell>
-
             </TableRow>
           ))}
         </TableBody>
-
       </Table>
     </TableContainer>
   );

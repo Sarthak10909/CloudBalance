@@ -1,11 +1,101 @@
-import React, { useState, useContext } from 'react'
-import Logo from "../../assets/Logo.png"
-import UserContext from '../../context/UserContext'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+// import React, { useState, useContext } from 'react'
+// import Logo from "../../assets/Logo.png"
+// import UserContext from '../../context/UserContext'
+// import { useNavigate } from 'react-router-dom'
+// import axios from 'axios'
+// import FormRenderer from "../../components/form/FormRenderer";
+
+// function Login() {
+
+//   const loginFields = [
+//     {
+//       label: "Email ID",
+//       name: "email",
+//       type: "email",
+//       placeholder: "Enter Email",
+//       required: true
+//     },
+//     {
+//       label: "Password",
+//       name: "password",
+//       type: "password",
+//       placeholder: "Enter Password",
+//       required: true
+//     }
+//   ];
+
+//   // const [email, setEmail] = useState('')
+//   // const [password, setPassword] = useState('')
+//   const [formData, setFormData] = useState({});
+//   const { setUser } = useContext(UserContext)
+//   const navigate = useNavigate()
+
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value })
+//   }
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       const response = await axios.post(
+//         "http://localhost:8080/auth/login",
+//         formData,
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//             "Accept": "application/json"
+//           },
+//           withCredentials: true
+//         }
+//       );
+//       setUser({ email: formData.email });
+//       localStorage.setItem("accessToken", response.data.accessToken);
+//       navigate("/dashboard/users");
+//     }
+//     catch (error) {
+//       console.error("Login failed:", error);
+//       console.error("Response:", error.response);
+//       console.error("Data:", error.response?.data);
+//       console.error("Status:", error.response?.status);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-white px-4">
+//       <div className="bg-white items-start p-10 rounded-lg shadow-lg">
+//         <img src={Logo} className="w-60 h-20 mb-5 mx-auto" />
+
+//         <form className="" onSubmit={handleSubmit}>
+//           <FormRenderer
+//             fields={loginFields}
+//             formData={formData}
+//             onChange={handleChange}
+//             className="flex flex-col gap-4"
+//           />
+
+//           <button className="w-full h-12 bg-blue-600 text-white rounded-lg mt-6">
+//             Login
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Login;
+
+import React, { useState } from "react";
+import Logo from "../../assets/Logo.png";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import FormRenderer from "../../components/form/FormRenderer";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { jwtDecode } from "jwt-decode";
 
 function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const loginFields = [
     {
@@ -13,26 +103,22 @@ function Login() {
       name: "email",
       type: "email",
       placeholder: "Enter Email",
-      required: true
+      required: true,
     },
     {
       label: "Password",
       name: "password",
       type: "password",
       placeholder: "Enter Password",
-      required: true
-    }
+      required: true,
+    },
   ];
 
-  // const [email, setEmail] = useState('')
-  // const [password, setPassword] = useState('')
   const [formData, setFormData] = useState({});
-  const { setUser } = useContext(UserContext)
-  const navigate = useNavigate()
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,16 +130,31 @@ function Login() {
         {
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json",
           },
-          withCredentials: true
+          withCredentials: true,
         }
       );
-      setUser({ email: formData.email });
-      localStorage.setItem("accessToken", response.data.accessToken);
-      navigate("/dashboard/users");
-    }
-    catch (error) {
+
+      const { accessToken} = response.data;
+
+      const decodedToken = jwtDecode(accessToken);
+      const role = decodedToken.role;
+
+      if (!role) {
+        throw new Error("Role not found in JWT");
+      }
+
+      login({ accessToken, role });
+
+      if (role === "ROLE_ADMIN" || role === "ROLE_READ_ONLY") {
+        navigate("/dashboard/users");
+      } else if (role === "ROLE_CUSTOMER") {
+        navigate("/dashboard/cost");
+      } else {
+        navigate("/login"); 
+      }
+    } catch (error) {
       console.error("Login failed:", error);
       console.error("Response:", error.response);
       console.error("Data:", error.response?.data);
@@ -64,9 +165,9 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="bg-white items-start p-10 rounded-lg shadow-lg">
-        <img src={Logo} className="w-60 h-20 mb-5 mx-auto" />
+        <img src={Logo} className="w-60 h-20 mb-5 mx-auto" alt="Logo" />
 
-        <form className="" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <FormRenderer
             fields={loginFields}
             formData={formData}
@@ -74,7 +175,10 @@ function Login() {
             className="flex flex-col gap-4"
           />
 
-          <button className="w-full h-12 bg-blue-600 text-white rounded-lg mt-6">
+          <button
+            type="submit"
+            className="w-full h-12 bg-blue-600 text-white rounded-lg mt-6"
+          >
             Login
           </button>
         </form>

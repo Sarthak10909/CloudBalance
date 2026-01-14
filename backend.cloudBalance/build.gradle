@@ -25,10 +25,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.mysql:mysql-connector-j:8.0.33'
-    implementation 'net.snowflake:snowflake-jdbc:3.16.1'
-    implementation ('com.snowflake:snowpark_2.12:1.18.0'){
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
-    }
+//    implementation 'net.snowflake:snowflake-jdbc:3.16.1'
+//    implementation ('com.snowflake:snowpark_2.12:1.18.0'){
+//        exclude group: 'org.slf4j', module: 'slf4j-simple'
+//    }
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'net.snowflake:snowflake-jdbc:3.15.1'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     compileOnly 'org.projectlombok:lombok'

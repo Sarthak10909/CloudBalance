@@ -16,6 +16,7 @@ import backend.cloudBalance.repo.AccountRepository;
 import backend.cloudBalance.repo.RoleRepository;
 import backend.cloudBalance.repo.UserRepository;
 import backend.cloudBalance.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.support.CustomSQLExceptionTranslatorRegistrar;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -115,6 +116,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Transactional
     @Override
     public EditResponseDTO getUserWithAccount(Long id){
         User user = userRepository.findById(id)
@@ -127,7 +129,7 @@ public class UserServiceImpl implements UserService {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
-        dto.setRole(user.getRole().getRoleType());
+        dto.setRole(user.getRole().getRoleType().name());
 
         List<Long> accountIds = user.getAccounts()
                 .stream()
